@@ -2,15 +2,29 @@ import { Suspense, lazy } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import routes from "tempo-routes";
 import Layout from "./components/layout/Layout";
+import { CircularProgress, Box } from "@mui/material";
 
 // Lazy load pages for better performance
-const CameraManagement = lazy(() => import("./pages/CameraManagement"));
-const UserManagement = lazy(() => import("./pages/UserManagement"));
-const TenantManagement = lazy(() => import("./pages/TenantManagement"));
+const CameraManagement = lazy(() => import("./pages/CameraManagement.mui"));
+const UserManagement = lazy(() => import("./pages/UserManagement.mui"));
+const TenantManagement = lazy(() => import("./pages/TenantManagement.mui"));
 
 function App() {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      }
+    >
       <>
         <Routes>
           <Route path="/" element={<Layout />}>

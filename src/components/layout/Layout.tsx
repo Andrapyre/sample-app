@@ -1,15 +1,58 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
-import { Toaster } from "@/components/ui/toaster";
+import { Snackbar, Alert, Container, Box } from "@mui/material";
+import { useState } from "react";
+
+export interface ToastProps {
+  open: boolean;
+  message: string;
+  severity: "success" | "info" | "warning" | "error";
+}
+
+export const useToast = () => {
+  const [toast, setToast] = useState<ToastProps>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showToast = (
+    message: string,
+    severity: "success" | "info" | "warning" | "error" = "success",
+  ) => {
+    setToast({ open: true, message, severity });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, open: false });
+  };
+
+  return { toast, showToast, hideToast };
+};
 
 export default function Layout() {
+  const { toast, hideToast } = useToast();
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
-      <main className="flex-1 container mx-auto p-6">
+      <Container component="main" sx={{ flexGrow: 1, py: 6 }}>
         <Outlet />
-      </main>
-      <Toaster />
-    </div>
+      </Container>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={hideToast}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={hideToast}
+          severity={toast.severity}
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

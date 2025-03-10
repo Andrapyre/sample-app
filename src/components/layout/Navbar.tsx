@@ -1,39 +1,54 @@
-import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Camera, Users, Building2 } from "lucide-react";
+import { Link as RouterLink, useLocation } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Container,
+} from "@mui/material";
+import {
+  CameraAlt as CameraIcon,
+  People as UsersIcon,
+  Business as BuildingIcon,
+} from "@mui/icons-material";
 
 export default function Navbar() {
   const location = useLocation();
 
   return (
-    <nav className="bg-primary text-primary-foreground p-4 shadow-md">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="text-xl font-bold">Management System</div>
-        <div className="flex space-x-4">
-          <NavLink
-            to="/cameras"
-            active={location.pathname === "/cameras"}
-            icon={<Camera className="mr-2 h-4 w-4" />}
-          >
-            Camera Management
-          </NavLink>
-          <NavLink
-            to="/users"
-            active={location.pathname === "/users"}
-            icon={<Users className="mr-2 h-4 w-4" />}
-          >
-            User Management
-          </NavLink>
-          <NavLink
-            to="/tenants"
-            active={location.pathname === "/tenants"}
-            icon={<Building2 className="mr-2 h-4 w-4" />}
-          >
-            Tenant Management
-          </NavLink>
-        </div>
-      </div>
-    </nav>
+    <AppBar position="static" color="primary">
+      <Container>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+            Management System
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <NavLink
+              to="/cameras"
+              active={location.pathname === "/cameras"}
+              icon={<CameraIcon sx={{ mr: 1, fontSize: 20 }} />}
+            >
+              Camera Management
+            </NavLink>
+            <NavLink
+              to="/users"
+              active={location.pathname === "/users"}
+              icon={<UsersIcon sx={{ mr: 1, fontSize: 20 }} />}
+            >
+              User Management
+            </NavLink>
+            <NavLink
+              to="/tenants"
+              active={location.pathname === "/tenants"}
+              icon={<BuildingIcon sx={{ mr: 1, fontSize: 20 }} />}
+            >
+              Tenant Management
+            </NavLink>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 }
 
@@ -46,17 +61,21 @@ interface NavLinkProps {
 
 function NavLink({ to, active, children, icon }: NavLinkProps) {
   return (
-    <Link
+    <Button
+      component={RouterLink}
       to={to}
-      className={cn(
-        "flex items-center px-4 py-2 rounded-md transition-colors",
-        active
-          ? "bg-primary-foreground text-primary font-medium"
-          : "hover:bg-primary-foreground/10",
-      )}
+      variant={active ? "contained" : "text"}
+      color={active ? "secondary" : "inherit"}
+      startIcon={icon}
+      sx={{
+        borderRadius: 1,
+        textTransform: "none",
+        px: 2,
+        py: 1,
+        fontWeight: active ? "medium" : "normal",
+      }}
     >
-      {icon}
       {children}
-    </Link>
+    </Button>
   );
 }
