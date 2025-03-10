@@ -141,7 +141,7 @@ export default function Home() {
               <CardMedia
                 component="img"
                 height="140"
-                image="https://images.unsplash.com/photo-1551884831-bbf3cdc6469e?w=600&q=80"
+                image="https://images.unsplash.com/photo-1576344444573-8cfa2e8886b4?w=600&q=80"
                 alt="Camera"
               />
               <CardContent sx={{ flexGrow: 1 }}>
@@ -173,7 +173,7 @@ export default function Home() {
               <CardMedia
                 component="img"
                 height="140"
-                image="https://images.unsplash.com/photo-1516357231954-91487b459602?w=600&q=80"
+                image="https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=600&q=80"
                 alt="Microscope"
               />
               <CardContent sx={{ flexGrow: 1 }}>

@@ -14,8 +14,8 @@ import {
   useTheme,
 } from "@mui/material";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -46,9 +46,13 @@ export default function DevicesDashboard() {
   });
 
   const [dataTransmission, setDataTransmission] = useState([
-    { name: "Cameras", value: 0 },
-    { name: "Microscopes", value: 0 },
-    { name: "Sensors", value: 0 },
+    { time: "00:00", cameras: 0, microscopes: 0, sensors: 0 },
+    { time: "04:00", cameras: 0, microscopes: 0, sensors: 0 },
+    { time: "08:00", cameras: 0, microscopes: 0, sensors: 0 },
+    { time: "12:00", cameras: 0, microscopes: 0, sensors: 0 },
+    { time: "16:00", cameras: 0, microscopes: 0, sensors: 0 },
+    { time: "20:00", cameras: 0, microscopes: 0, sensors: 0 },
+    { time: "Now", cameras: 0, microscopes: 0, sensors: 0 },
   ]);
 
   const [recentDevices, setRecentDevices] = useState<IoTDevice[]>([]);
@@ -125,11 +129,50 @@ export default function DevicesDashboard() {
 
       setDeviceStats(stats);
 
-      // Generate random data transmission values (in GB/s)
+      // Generate random data transmission values over time (in GB/s)
       setDataTransmission([
-        { name: "Cameras", value: (Math.random() * 5 + 2).toFixed(2) },
-        { name: "Microscopes", value: (Math.random() * 8 + 4).toFixed(2) },
-        { name: "Sensors", value: (Math.random() * 2 + 0.5).toFixed(2) },
+        {
+          time: "00:00",
+          cameras: (Math.random() * 3 + 1).toFixed(2),
+          microscopes: (Math.random() * 5 + 2).toFixed(2),
+          sensors: (Math.random() * 1 + 0.2).toFixed(2),
+        },
+        {
+          time: "04:00",
+          cameras: (Math.random() * 3 + 1).toFixed(2),
+          microscopes: (Math.random() * 5 + 2).toFixed(2),
+          sensors: (Math.random() * 1 + 0.2).toFixed(2),
+        },
+        {
+          time: "08:00",
+          cameras: (Math.random() * 4 + 2).toFixed(2),
+          microscopes: (Math.random() * 6 + 3).toFixed(2),
+          sensors: (Math.random() * 1.5 + 0.3).toFixed(2),
+        },
+        {
+          time: "12:00",
+          cameras: (Math.random() * 5 + 3).toFixed(2),
+          microscopes: (Math.random() * 7 + 4).toFixed(2),
+          sensors: (Math.random() * 2 + 0.4).toFixed(2),
+        },
+        {
+          time: "16:00",
+          cameras: (Math.random() * 5 + 3).toFixed(2),
+          microscopes: (Math.random() * 7 + 4).toFixed(2),
+          sensors: (Math.random() * 2 + 0.4).toFixed(2),
+        },
+        {
+          time: "20:00",
+          cameras: (Math.random() * 4 + 2).toFixed(2),
+          microscopes: (Math.random() * 6 + 3).toFixed(2),
+          sensors: (Math.random() * 1.5 + 0.3).toFixed(2),
+        },
+        {
+          time: "Now",
+          cameras: (Math.random() * 5 + 2).toFixed(2),
+          microscopes: (Math.random() * 8 + 4).toFixed(2),
+          sensors: (Math.random() * 2 + 0.5).toFixed(2),
+        },
       ]);
 
       // Sort by last updated and get the 3 most recent
@@ -412,27 +455,49 @@ export default function DevicesDashboard() {
 
       {/* Data Transmission Graph */}
       <Typography variant="h5" sx={{ mb: 2 }}>
-        Current Data Transmission (GB/s)
+        Data Transmission Over Last 24 Hours (GB/s)
       </Typography>
       <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart
+          <LineChart
             data={dataTransmission}
             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
+            <XAxis dataKey="time" />
             <YAxis
               label={{ value: "GB/s", angle: -90, position: "insideLeft" }}
             />
             <Tooltip formatter={(value) => [`${value} GB/s`, "Data Rate"]} />
             <Legend />
-            <Bar
-              dataKey="value"
-              name="Data Transmission Rate"
-              fill={theme.palette.primary.main}
+            <Line
+              type="monotone"
+              dataKey="cameras"
+              name="Cameras"
+              stroke={theme.palette.primary.main}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
             />
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey="microscopes"
+              name="Microscopes"
+              stroke={theme.palette.success.main}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="sensors"
+              name="Sensors"
+              stroke={theme.palette.warning.main}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
         </ResponsiveContainer>
       </Paper>
 

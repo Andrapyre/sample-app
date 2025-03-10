@@ -81,6 +81,8 @@ export default function Navbar() {
                     anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                     transformOrigin={{ vertical: "top", horizontal: "left" }}
                     slotProps={{ paper: { sx: { mt: 1 } } }}
+                    disablePortal
+                    keepMounted
                   >
                     <MenuItem
                       onClick={() => {

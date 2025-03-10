@@ -37,7 +37,7 @@ export default function UserMenu() {
   const handleLogout = () => {
     handleClose();
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const handleProfile = () => {
@@ -102,6 +102,8 @@ export default function UserMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         slotProps={{ paper: { sx: { mt: 1 } } }}
+        disablePortal
+        keepMounted
         PaperProps={{
           elevation: 3,
           sx: {
