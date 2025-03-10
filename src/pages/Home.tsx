@@ -141,7 +141,7 @@ export default function Home() {
               <CardMedia
                 component="img"
                 height="140"
-                image="https://images.unsplash.com/photo-1576344444573-8cfa2e8886b4?w=600&q=80"
+                image="https://images.unsplash.com/photo-1595079676339-1534801ad6cf?w=600&q=80"
                 alt="Camera"
               />
               <CardContent sx={{ flexGrow: 1 }}>

@@ -458,7 +458,7 @@ export default function DevicesDashboard() {
         Data Transmission Over Last 24 Hours (GB/s)
       </Typography>
       <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={600}>
           <LineChart
             data={dataTransmission}
             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -467,6 +467,7 @@ export default function DevicesDashboard() {
             <XAxis dataKey="time" />
             <YAxis
               label={{ value: "GB/s", angle: -90, position: "insideLeft" }}
+              domain={[0, "auto"]}
             />
             <Tooltip formatter={(value) => [`${value} GB/s`, "Data Rate"]} />
             <Legend />

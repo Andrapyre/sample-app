@@ -85,9 +85,7 @@ export default function Navbar() {
                     keepMounted
                   >
                     <MenuItem
-                      onClick={() => {
-                        handleDevicesMenuClose();
-                      }}
+                      onClick={handleDevicesMenuClose}
                       component={RouterLink}
                       to="/devices"
                     >
@@ -95,9 +93,7 @@ export default function Navbar() {
                       Dashboard
                     </MenuItem>
                     <MenuItem
-                      onClick={() => {
-                        handleDevicesMenuClose();
-                      }}
+                      onClick={handleDevicesMenuClose}
                       component={RouterLink}
                       to="/devices/cameras"
                     >
@@ -105,9 +101,7 @@ export default function Navbar() {
                       Cameras
                     </MenuItem>
                     <MenuItem
-                      onClick={() => {
-                        handleDevicesMenuClose();
-                      }}
+                      onClick={handleDevicesMenuClose}
                       component={RouterLink}
                       to="/devices/microscopes"
                     >
@@ -115,9 +109,7 @@ export default function Navbar() {
                       Microscopes
                     </MenuItem>
                     <MenuItem
-                      onClick={() => {
-                        handleDevicesMenuClose();
-                      }}
+                      onClick={handleDevicesMenuClose}
                       component={RouterLink}
                       to="/devices/sensors"
                     >
