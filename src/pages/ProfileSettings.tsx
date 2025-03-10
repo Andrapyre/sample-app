@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { updateNotificationSettings } from "@/store/slices/authSlice";
 import {
   Box,
   Typography,
@@ -18,7 +19,8 @@ import {
 import { Notifications as NotificationsIcon } from "@mui/icons-material";
 
 export default function ProfileSettings() {
-  const { user, updateNotificationSettings } = useAuth();
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
   const [showSuccess, setShowSuccess] = useState(false);
 
   if (!user) {
@@ -28,7 +30,7 @@ export default function ProfileSettings() {
   const handleNotificationChange =
     (setting: keyof typeof user.notifications) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      updateNotificationSettings({ [setting]: event.target.checked });
+      dispatch(updateNotificationSettings({ [setting]: event.target.checked }));
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     };

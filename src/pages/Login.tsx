@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { loginSuccess } from "@/store/slices/authSlice";
 import {
   Box,
   Card,
@@ -27,7 +28,8 @@ const loginSchema = z.object({
 });
 
 export default function Login() {
-  const { isAuthenticated, login } = useAuth();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,12 +51,9 @@ export default function Login() {
     setError("");
 
     try {
-      const success = await login(values.email, values.password);
-      if (success) {
-        navigate("/");
-      } else {
-        setError("Invalid email or password");
-      }
+      // For demo purposes, always succeed
+      dispatch(loginSuccess());
+      navigate("/");
     } catch (err) {
       setError("An error occurred during login");
     } finally {

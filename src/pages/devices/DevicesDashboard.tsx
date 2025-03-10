@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -30,165 +30,29 @@ import {
   Add as AddIcon,
   Dashboard as DashboardIcon,
 } from "@mui/icons-material";
-import { IoTDevice } from "@/types/devices";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { fetchDevices } from "@/store/slices/deviceSlice";
 
 export default function DevicesDashboard() {
   const navigate = useNavigate();
   const theme = useTheme();
-  const [deviceStats, setDeviceStats] = useState({
-    total: 0,
-    online: 0,
-    offline: 0,
-    maintenance: 0,
-    cameras: 0,
-    microscopes: 0,
-    sensors: 0,
-  });
+  const dispatch = useAppDispatch();
+  const { devices, stats, dataTransmission } = useAppSelector(
+    (state) => state.devices,
+  );
 
-  const [dataTransmission, setDataTransmission] = useState([
-    { time: "00:00", cameras: 0, microscopes: 0, sensors: 0 },
-    { time: "04:00", cameras: 0, microscopes: 0, sensors: 0 },
-    { time: "08:00", cameras: 0, microscopes: 0, sensors: 0 },
-    { time: "12:00", cameras: 0, microscopes: 0, sensors: 0 },
-    { time: "16:00", cameras: 0, microscopes: 0, sensors: 0 },
-    { time: "20:00", cameras: 0, microscopes: 0, sensors: 0 },
-    { time: "Now", cameras: 0, microscopes: 0, sensors: 0 },
-  ]);
+  // Get the 3 most recent devices
+  const recentDevices = [...devices]
+    .sort(
+      (a, b) =>
+        new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
+    )
+    .slice(0, 3);
 
-  const [recentDevices, setRecentDevices] = useState<IoTDevice[]>([]);
-
-  // Simulate fetching device data
+  // Fetch device data
   useEffect(() => {
-    // This would be an API call in a real application
-    const fetchDeviceData = () => {
-      // Simulated data
-      const allDevices: IoTDevice[] = [
-        {
-          id: "1",
-          name: "Front Door Camera",
-          location: "Main Entrance",
-          ipAddress: "192.168.1.100",
-          type: "camera",
-          status: "online",
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          name: "Lab Microscope A",
-          location: "Research Lab 1",
-          model: "Olympus BX53",
-          magnification: 1000,
-          digitalOutput: true,
-          type: "microscope",
-          status: "online",
-          lastUpdated: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-        },
-        {
-          id: "3",
-          name: "Office Temperature Sensor",
-          location: "Main Office",
-          sensorType: "temperature",
-          measurementUnit: "°C",
-          type: "sensor",
-          status: "online",
-          lastUpdated: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
-        },
-        {
-          id: "4",
-          name: "Warehouse Camera",
-          location: "Storage Area",
-          ipAddress: "192.168.1.102",
-          type: "camera",
-          status: "offline",
-          lastUpdated: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        },
-        {
-          id: "5",
-          name: "Quality Control Microscope",
-          location: "Manufacturing Floor",
-          model: "Zeiss Axio",
-          magnification: 200,
-          digitalOutput: false,
-          type: "microscope",
-          status: "maintenance",
-          lastUpdated: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-        },
-      ];
-
-      // Calculate stats
-      const stats = {
-        total: allDevices.length,
-        online: allDevices.filter((d) => d.status === "online").length,
-        offline: allDevices.filter((d) => d.status === "offline").length,
-        maintenance: allDevices.filter((d) => d.status === "maintenance")
-          .length,
-        cameras: allDevices.filter((d) => d.type === "camera").length,
-        microscopes: allDevices.filter((d) => d.type === "microscope").length,
-        sensors: allDevices.filter((d) => d.type === "sensor").length,
-      };
-
-      setDeviceStats(stats);
-
-      // Generate random data transmission values over time (in GB/s)
-      setDataTransmission([
-        {
-          time: "00:00",
-          cameras: (Math.random() * 3 + 1).toFixed(2),
-          microscopes: (Math.random() * 5 + 2).toFixed(2),
-          sensors: (Math.random() * 1 + 0.2).toFixed(2),
-        },
-        {
-          time: "04:00",
-          cameras: (Math.random() * 3 + 1).toFixed(2),
-          microscopes: (Math.random() * 5 + 2).toFixed(2),
-          sensors: (Math.random() * 1 + 0.2).toFixed(2),
-        },
-        {
-          time: "08:00",
-          cameras: (Math.random() * 4 + 2).toFixed(2),
-          microscopes: (Math.random() * 6 + 3).toFixed(2),
-          sensors: (Math.random() * 1.5 + 0.3).toFixed(2),
-        },
-        {
-          time: "12:00",
-          cameras: (Math.random() * 5 + 3).toFixed(2),
-          microscopes: (Math.random() * 7 + 4).toFixed(2),
-          sensors: (Math.random() * 2 + 0.4).toFixed(2),
-        },
-        {
-          time: "16:00",
-          cameras: (Math.random() * 5 + 3).toFixed(2),
-          microscopes: (Math.random() * 7 + 4).toFixed(2),
-          sensors: (Math.random() * 2 + 0.4).toFixed(2),
-        },
-        {
-          time: "20:00",
-          cameras: (Math.random() * 4 + 2).toFixed(2),
-          microscopes: (Math.random() * 6 + 3).toFixed(2),
-          sensors: (Math.random() * 1.5 + 0.3).toFixed(2),
-        },
-        {
-          time: "Now",
-          cameras: (Math.random() * 5 + 2).toFixed(2),
-          microscopes: (Math.random() * 8 + 4).toFixed(2),
-          sensors: (Math.random() * 2 + 0.5).toFixed(2),
-        },
-      ]);
-
-      // Sort by last updated and get the 3 most recent
-      const recent = [...allDevices]
-        .sort(
-          (a, b) =>
-            new Date(b.lastUpdated).getTime() -
-            new Date(a.lastUpdated).getTime(),
-        )
-        .slice(0, 3);
-
-      setRecentDevices(recent);
-    };
-
-    fetchDeviceData();
-  }, []);
+    dispatch(fetchDevices());
+  }, [dispatch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -293,7 +157,7 @@ export default function DevicesDashboard() {
               Total Devices
             </Typography>
             <Typography variant="h3" color="primary">
-              {deviceStats.total}
+              {stats.total}
             </Typography>
           </Paper>
         </Grid>
@@ -313,7 +177,7 @@ export default function DevicesDashboard() {
               Online
             </Typography>
             <Typography variant="h3" color="success.main">
-              {deviceStats.online}
+              {stats.online}
             </Typography>
           </Paper>
         </Grid>
@@ -333,7 +197,7 @@ export default function DevicesDashboard() {
               Offline
             </Typography>
             <Typography variant="h3" color="error.main">
-              {deviceStats.offline}
+              {stats.offline}
             </Typography>
           </Paper>
         </Grid>
@@ -353,7 +217,7 @@ export default function DevicesDashboard() {
               Maintenance
             </Typography>
             <Typography variant="h3" color="warning.main">
-              {deviceStats.maintenance}
+              {stats.maintenance}
             </Typography>
           </Paper>
         </Grid>
@@ -380,7 +244,7 @@ export default function DevicesDashboard() {
                   Cameras
                 </Typography>
                 <Typography variant="h4" color="primary.main">
-                  {deviceStats.cameras}
+                  {stats.cameras}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -409,7 +273,7 @@ export default function DevicesDashboard() {
                   Microscopes
                 </Typography>
                 <Typography variant="h4" color="primary.main">
-                  {deviceStats.microscopes}
+                  {stats.microscopes}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -438,7 +302,7 @@ export default function DevicesDashboard() {
                   Sensors
                 </Typography>
                 <Typography variant="h4" color="primary.main">
-                  {deviceStats.sensors}
+                  {stats.sensors}
                 </Typography>
                 <Typography
                   variant="body2"

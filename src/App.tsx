@@ -1,10 +1,11 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import routes from "tempo-routes";
 import Layout from "./components/layout/Layout";
 import { CircularProgress, Box } from "@mui/material";
-import { AuthProvider } from "./context/AuthContext";
-import { useAuth } from "./context/AuthContext";
+import { useAppSelector, useAppDispatch } from "./hooks/redux";
+import { checkAuth } from "./store/slices/authSlice";
+import { fetchDevices } from "./store/slices/deviceSlice";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("./pages/Home"));
@@ -21,7 +22,7 @@ const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -31,97 +32,101 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  const { isAuthenticated } = useAuth();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(checkAuth());
+    dispatch(fetchDevices());
+  }, [dispatch]);
 
   return (
-    <AuthProvider>
-      <Suspense
-        fallback={
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100vh",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        }
-      >
-        <>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Layout />}>
-              {/* Public routes */}
-              <Route index element={<Home />} />
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      }
+    >
+      <>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Layout />}>
+            {/* Public routes */}
+            <Route index element={<Home />} />
 
-              {/* Protected routes */}
-              <Route
-                path="devices"
-                element={
-                  <ProtectedRoute>
-                    <DevicesDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="devices/cameras"
-                element={
-                  <ProtectedRoute>
-                    <CameraManagement />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="devices/microscopes"
-                element={
-                  <ProtectedRoute>
-                    <MicroscopeManagement />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="devices/sensors"
-                element={
-                  <ProtectedRoute>
-                    <SensorManagement />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="users"
-                element={
-                  <ProtectedRoute>
-                    <UserManagement />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="tenants"
-                element={
-                  <ProtectedRoute>
-                    <TenantManagement />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfileSettings />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-            {import.meta.env.VITE_TEMPO === "true" && (
-              <Route path="/tempobook/*" />
-            )}
-          </Routes>
-          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-        </>
-      </Suspense>
-    </AuthProvider>
+            {/* Protected routes */}
+            <Route
+              path="devices"
+              element={
+                <ProtectedRoute>
+                  <DevicesDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="devices/cameras"
+              element={
+                <ProtectedRoute>
+                  <CameraManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="devices/microscopes"
+              element={
+                <ProtectedRoute>
+                  <MicroscopeManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="devices/sensors"
+              element={
+                <ProtectedRoute>
+                  <SensorManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="tenants"
+              element={
+                <ProtectedRoute>
+                  <TenantManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <ProfileSettings />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+          {import.meta.env.VITE_TEMPO === "true" && (
+            <Route path="/tempobook/*" />
+          )}
+        </Routes>
+        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+      </>
+    </Suspense>
   );
 }
 

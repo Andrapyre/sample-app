@@ -20,12 +20,12 @@ import {
   KeyboardArrowDown as ArrowDownIcon,
 } from "@mui/icons-material";
 import UserMenu from "./UserMenu";
-import { useAuth } from "@/context/AuthContext";
+import { useAppSelector } from "@/hooks/redux";
 import { useState } from "react";
 
 export default function Navbar() {
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [devicesMenuAnchor, setDevicesMenuAnchor] =
     useState<null | HTMLElement>(null);
 

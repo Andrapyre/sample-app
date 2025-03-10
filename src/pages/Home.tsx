@@ -1,5 +1,5 @@
 import { useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAppSelector } from "@/hooks/redux";
 import {
   Box,
   Typography,
@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
   if (isAuthenticated) {

@@ -18,10 +18,16 @@ import {
   Login as LoginIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
-import { useAuth } from "@/context/AuthContext";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import {
+  logout,
+  updateUserProfile,
+  updateNotificationSettings,
+} from "@/store/slices/authSlice";
 
 export default function UserMenu() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -36,7 +42,7 @@ export default function UserMenu() {
 
   const handleLogout = () => {
     handleClose();
-    logout();
+    dispatch(logout());
     navigate("/");
   };
 
