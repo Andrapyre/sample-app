@@ -4,8 +4,9 @@ import routes from "tempo-routes";
 import Layout from "./components/layout/Layout";
 
 // Lazy load pages for better performance
-const CameraParameters = lazy(() => import("./pages/CameraParameters"));
 const CameraManagement = lazy(() => import("./pages/CameraManagement"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const TenantManagement = lazy(() => import("./pages/TenantManagement"));
 
 function App() {
   return (
@@ -13,9 +14,10 @@ function App() {
       <>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/parameters" replace />} />
-            <Route path="parameters" element={<CameraParameters />} />
+            <Route index element={<Navigate to="/cameras" replace />} />
             <Route path="cameras" element={<CameraManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="tenants" element={<TenantManagement />} />
           </Route>
           {import.meta.env.VITE_TEMPO === "true" && (
             <Route path="/tempobook/*" />

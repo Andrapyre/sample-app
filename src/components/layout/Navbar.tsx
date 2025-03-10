@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Camera, Sliders } from "lucide-react";
+import { Camera, Users, Building2 } from "lucide-react";
 
 export default function Navbar() {
   const location = useLocation();
@@ -8,21 +8,28 @@ export default function Navbar() {
   return (
     <nav className="bg-primary text-primary-foreground p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-xl font-bold">Camera Management System</div>
+        <div className="text-xl font-bold">Management System</div>
         <div className="flex space-x-4">
-          <NavLink
-            to="/parameters"
-            active={location.pathname === "/parameters"}
-            icon={<Sliders className="mr-2 h-4 w-4" />}
-          >
-            Camera Parameters
-          </NavLink>
           <NavLink
             to="/cameras"
             active={location.pathname === "/cameras"}
             icon={<Camera className="mr-2 h-4 w-4" />}
           >
             Camera Management
+          </NavLink>
+          <NavLink
+            to="/users"
+            active={location.pathname === "/users"}
+            icon={<Users className="mr-2 h-4 w-4" />}
+          >
+            User Management
+          </NavLink>
+          <NavLink
+            to="/tenants"
+            active={location.pathname === "/tenants"}
+            icon={<Building2 className="mr-2 h-4 w-4" />}
+          >
+            Tenant Management
           </NavLink>
         </div>
       </div>
