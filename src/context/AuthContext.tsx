@@ -31,7 +31,7 @@ const defaultUser: UserProfile = {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  loading: true,
+  loading: false,
 };
 
 const AuthContext = createContext<AuthContextType>({
