@@ -6,7 +6,7 @@ const theme = createTheme({
       main: "#1565c0", // Matches the previous primary color
     },
     secondary: {
-      main: "#ed6c02", // Matches the previous secondary color
+      main: "#ffffff", // Changed to white as requested
     },
     error: {
       main: "#d32f2f",

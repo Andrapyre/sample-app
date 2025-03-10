@@ -584,6 +584,8 @@ export default function TenantManagement() {
                       labelId="user-select-label"
                       label="User"
                       displayEmpty
+                      value={field.value}
+                      onChange={field.onChange}
                     >
                       {selectedTenant &&
                       getAvailableUsers(selectedTenant).length === 0 ? (

@@ -12,6 +12,7 @@ import {
   People as UsersIcon,
   Business as BuildingIcon,
 } from "@mui/icons-material";
+import UserMenu from "./UserMenu";
 
 export default function Navbar() {
   const location = useLocation();
@@ -23,28 +24,31 @@ export default function Navbar() {
           <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
             Management System
           </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <NavLink
-              to="/cameras"
-              active={location.pathname === "/cameras"}
-              icon={<CameraIcon sx={{ mr: 1, fontSize: 20 }} />}
-            >
-              Camera Management
-            </NavLink>
-            <NavLink
-              to="/users"
-              active={location.pathname === "/users"}
-              icon={<UsersIcon sx={{ mr: 1, fontSize: 20 }} />}
-            >
-              User Management
-            </NavLink>
-            <NavLink
-              to="/tenants"
-              active={location.pathname === "/tenants"}
-              icon={<BuildingIcon sx={{ mr: 1, fontSize: 20 }} />}
-            >
-              Tenant Management
-            </NavLink>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box sx={{ display: "flex", gap: 2, mr: 3 }}>
+              <NavLink
+                to="/cameras"
+                active={location.pathname === "/cameras"}
+                icon={<CameraIcon sx={{ mr: 1, fontSize: 20 }} />}
+              >
+                Camera Management
+              </NavLink>
+              <NavLink
+                to="/users"
+                active={location.pathname === "/users"}
+                icon={<UsersIcon sx={{ mr: 1, fontSize: 20 }} />}
+              >
+                User Management
+              </NavLink>
+              <NavLink
+                to="/tenants"
+                active={location.pathname === "/tenants"}
+                icon={<BuildingIcon sx={{ mr: 1, fontSize: 20 }} />}
+              >
+                Tenant Management
+              </NavLink>
+            </Box>
+            <UserMenu />
           </Box>
         </Toolbar>
       </Container>
