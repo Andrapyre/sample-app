@@ -78,6 +78,9 @@ export default function Navbar() {
                     open={Boolean(devicesMenuAnchor)}
                     onClose={handleDevicesMenuClose}
                     MenuListProps={{ sx: { py: 0 } }}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                    transformOrigin={{ vertical: "top", horizontal: "left" }}
+                    slotProps={{ paper: { sx: { mt: 1 } } }}
                   >
                     <MenuItem
                       onClick={() => {

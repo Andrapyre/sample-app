@@ -11,7 +11,18 @@ import {
   Paper,
   Divider,
   Button,
+  useTheme,
 } from "@mui/material";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import {
   CameraAlt as CameraIcon,
   Science as MicroscopeIcon,
@@ -23,6 +34,7 @@ import { IoTDevice } from "@/types/devices";
 
 export default function DevicesDashboard() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const [deviceStats, setDeviceStats] = useState({
     total: 0,
     online: 0,
@@ -32,6 +44,12 @@ export default function DevicesDashboard() {
     microscopes: 0,
     sensors: 0,
   });
+
+  const [dataTransmission, setDataTransmission] = useState([
+    { name: "Cameras", value: 0 },
+    { name: "Microscopes", value: 0 },
+    { name: "Sensors", value: 0 },
+  ]);
 
   const [recentDevices, setRecentDevices] = useState<IoTDevice[]>([]);
 
@@ -106,6 +124,13 @@ export default function DevicesDashboard() {
       };
 
       setDeviceStats(stats);
+
+      // Generate random data transmission values (in GB/s)
+      setDataTransmission([
+        { name: "Cameras", value: (Math.random() * 5 + 2).toFixed(2) },
+        { name: "Microscopes", value: (Math.random() * 8 + 4).toFixed(2) },
+        { name: "Sensors", value: (Math.random() * 2 + 0.5).toFixed(2) },
+      ]);
 
       // Sort by last updated and get the 3 most recent
       const recent = [...allDevices]
@@ -384,6 +409,32 @@ export default function DevicesDashboard() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Data Transmission Graph */}
+      <Typography variant="h5" sx={{ mb: 2 }}>
+        Current Data Transmission (GB/s)
+      </Typography>
+      <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={dataTransmission}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis
+              label={{ value: "GB/s", angle: -90, position: "insideLeft" }}
+            />
+            <Tooltip formatter={(value) => [`${value} GB/s`, "Data Rate"]} />
+            <Legend />
+            <Bar
+              dataKey="value"
+              name="Data Transmission Rate"
+              fill={theme.palette.primary.main}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </Paper>
 
       {/* Recent Devices */}
       <Typography variant="h5" sx={{ mb: 2 }}>

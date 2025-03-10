@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
   Box,
@@ -22,6 +22,10 @@ import {
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  if (isAuthenticated) {
+    return <Navigate to="/devices" replace />;
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -201,7 +205,7 @@ export default function Home() {
               <CardMedia
                 component="img"
                 height="140"
-                image="https://images.unsplash.com/photo-1581092921461-39b9884d8d35?w=600&q=80"
+                image="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&q=80"
                 alt="Sensors"
               />
               <CardContent sx={{ flexGrow: 1 }}>
