@@ -24,30 +24,40 @@ import {
   updateUserProfile,
   updateNotificationSettings,
 } from "@/store/slices/authSlice";
+import { openUserMenu, closeUserMenu } from "@/store/slices/uiSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/index";
+
+export const selectDevicesMenuAnchor = (state: RootState) => state.ui.devicesMenuAnchor;
+export const selectUserMenuAnchor = (state: RootState) => state.ui.userMenuAnchor;
 
 export default function UserMenu() {
+  
   const dispatch = useAppDispatch();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const userMenuAnchor = useAppSelector(selectUserMenuAnchor);
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const anchorId = useSelector(selectDevicesMenuAnchor)
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    dispatch(openUserMenu(event.currentTarget.id));
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const anchor = document.getElementById(anchorId)
+  console.log(anchor)
+
+  const handleMenuClose = () => {
+    dispatch(closeUserMenu());
   };
 
   const handleLogout = () => {
-    handleClose();
     dispatch(logout());
+    handleMenuClose();
     navigate("/");
   };
 
   const handleProfile = () => {
-    handleClose();
+    handleMenuClose();
     setTimeout(() => {
       navigate("/profile");
     }, 0);
@@ -58,6 +68,8 @@ export default function UserMenu() {
       navigate("/login");
     }, 0);
   };
+
+  const isOpen = Boolean(userMenuAnchor);
 
   if (!isAuthenticated) {
     return (
@@ -79,15 +91,17 @@ export default function UserMenu() {
     );
   }
 
+  if (!user) return null;
+
   return (
     <Box>
       <Tooltip title="Account settings">
         <IconButton
-          onClick={handleClick}
+          onClick={handleMenuOpen}
           size="small"
-          aria-controls={open ? "account-menu" : undefined}
+          aria-controls={isOpen ? "account-menu" : undefined}
           aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
+          aria-expanded={isOpen ? "true" : undefined}
           sx={{ p: 0 }}
         >
           <Avatar
@@ -104,11 +118,11 @@ export default function UserMenu() {
         </IconButton>
       </Tooltip>
       <Menu
-        anchorEl={anchorEl}
+        anchorEl={anchor}
         id="account-menu"
-        open={open}
-        onClose={handleClose}
-        onClick={handleClose}
+        open={isOpen}
+        onClose={handleMenuClose}
+        onClick={handleMenuClose}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         slotProps={{ paper: { sx: { mt: 1 } } }}

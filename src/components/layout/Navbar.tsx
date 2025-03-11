@@ -8,7 +8,6 @@ import {
   Container,
   Menu,
   MenuItem,
-  IconButton,
 } from "@mui/material";
 import {
   CameraAlt as CameraIcon,
@@ -20,33 +19,32 @@ import {
   KeyboardArrowDown as ArrowDownIcon,
 } from "@mui/icons-material";
 import UserMenu from "./UserMenu";
-import { useAppSelector } from "@/hooks/redux";
-import { useState } from "react";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { openDevicesMenu, closeDevicesMenu, selectDevicesMenuAnchor } from "@/store/slices/uiSlice";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const [devicesMenuAnchor, setDevicesMenuAnchor] =
-    useState<null | HTMLElement>(null);
+  const devicesMenuAnchor = useAppSelector(selectDevicesMenuAnchor);
 
   const handleDevicesMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setDevicesMenuAnchor(event.currentTarget);
+    dispatch(openDevicesMenu(event.currentTarget.id));
   };
-
-  const isOpen = Boolean(devicesMenuAnchor);
 
   const handleDevicesMenuClose = () => {
-    setDevicesMenuAnchor(null);
+    dispatch(closeDevicesMenu());
   };
+
+  const anchor = document.getElementById(devicesMenuAnchor ?? "");
+  const isOpen = Boolean(devicesMenuAnchor);
 
   const isDevicesActive = location.pathname.startsWith("/devices");
 
   const handleMenuItemClick = (path: string) => {
     handleDevicesMenuClose();
-    setTimeout(() => {
-      navigate(path);
-    }, 0);
+    navigate(path);
   };
 
   return (
@@ -84,7 +82,7 @@ export default function Navbar() {
                     Devices
                   </Button>
                   <Menu
-                    anchorEl={devicesMenuAnchor}
+                    anchorEl={anchor}
                     open={isOpen}
                     onClose={handleDevicesMenuClose}
                     MenuListProps={{ sx: { py: 0 } }}
