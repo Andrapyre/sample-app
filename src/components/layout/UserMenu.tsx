@@ -48,11 +48,15 @@ export default function UserMenu() {
 
   const handleProfile = () => {
     handleClose();
-    navigate("/profile");
+    setTimeout(() => {
+      navigate("/profile");
+    }, 0);
   };
 
   const handleLogin = () => {
-    navigate("/login");
+    setTimeout(() => {
+      navigate("/login");
+    }, 0);
   };
 
   if (!isAuthenticated) {
