@@ -44,9 +44,7 @@ export default function Navbar() {
 
   const handleMenuItemClick = (path: string) => {
     handleDevicesMenuClose();
-    setTimeout(() => {
-      navigate(path);
-    }, 10);
+    navigate(path);
   };
 
   return (

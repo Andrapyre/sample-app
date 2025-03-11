@@ -43,16 +43,12 @@ export default function UserMenu() {
   const handleLogout = () => {
     handleClose();
     dispatch(logout());
-    setTimeout(() => {
-      navigate("/");
-    }, 10);
+    navigate("/");
   };
 
   const handleProfile = () => {
     handleClose();
-    setTimeout(() => {
-      navigate("/profile");
-    }, 10);
+    navigate("/profile");
   };
 
   const handleLogin = () => {
