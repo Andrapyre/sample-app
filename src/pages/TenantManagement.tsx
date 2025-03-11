@@ -1,63 +1,43 @@
 import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
+  Box,
+  Typography,
+  Tabs,
+  Tab,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
+  TextField,
+  Button,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
-  TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
+  Paper,
+  IconButton,
   Dialog,
+  DialogActions,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
+  DialogContentText,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  FormControl,
+  InputLabel,
+  Select as MuiSelect,
+  MenuItem,
+  FormHelperText,
+  Divider,
+} from "@mui/material";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Trash2, Edit, UserPlus } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  PersonAdd as PersonAddIcon,
+} from "@mui/icons-material";
+import { useToast } from "@/components/layout/Layout";
 import { Tenant, User } from "@/types/models";
 
 const formSchema = z.object({
@@ -72,8 +52,31 @@ const userAssignmentSchema = z.object({
   }),
 });
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`tenant-tabpanel-${index}`}
+      aria-labelledby={`tenant-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
 export default function TenantManagement() {
-  const { toast } = useToast();
+  const { showToast } = useToast();
+  const [tabValue, setTabValue] = useState(0);
   const [tenants, setTenants] = useState<Tenant[]>([
     {
       id: "1",
@@ -113,31 +116,54 @@ export default function TenantManagement() {
     },
   ]);
 
-  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [assignUserDialogOpen, setAssignUserDialogOpen] = useState(false);
+  const [removeUserDialogOpen, setRemoveUserDialogOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const {
+    control: createControl,
+    handleSubmit: handleCreateSubmit,
+    reset: resetCreateForm,
+    formState: { errors: createErrors },
+  } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
     },
   });
 
-  const editForm = useForm<z.infer<typeof formSchema>>({
+  const {
+    control: editControl,
+    handleSubmit: handleEditSubmit,
+    reset: resetEditForm,
+    formState: { errors: editErrors },
+  } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
     },
   });
 
-  const userAssignmentForm = useForm<z.infer<typeof userAssignmentSchema>>({
+  const {
+    control: assignUserControl,
+    handleSubmit: handleAssignUserSubmit,
+    reset: resetAssignUserForm,
+    formState: { errors: assignUserErrors },
+  } = useForm<z.infer<typeof userAssignmentSchema>>({
     resolver: zodResolver(userAssignmentSchema),
     defaultValues: {
       userId: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
+  function onCreateSubmit(values: z.infer<typeof formSchema>) {
     const newTenant = {
       ...values,
       id: Date.now().toString(),
@@ -146,69 +172,75 @@ export default function TenantManagement() {
 
     setTenants([...tenants, newTenant]);
 
-    toast({
-      title: "Tenant created",
-      description: `${values.name} has been added to the system.`,
-    });
+    showToast(`${values.name} has been added to the system.`, "success");
 
-    form.reset();
+    resetCreateForm();
+    setTabValue(0); // Switch to list tab after adding
+  }
+
+  function openEditDialog(tenant: Tenant) {
+    setSelectedTenant(tenant);
+    resetEditForm({
+      name: tenant.name,
+    });
+    setEditDialogOpen(true);
   }
 
   function onEditSubmit(values: z.infer<typeof formSchema>) {
-    if (!editingTenant) return;
+    if (!selectedTenant) return;
 
     const updatedTenants = tenants.map((tenant) =>
-      tenant.id === editingTenant.id
+      tenant.id === selectedTenant.id
         ? { ...tenant, name: values.name }
         : tenant,
     );
 
     setTenants(updatedTenants);
 
-    toast({
-      title: "Tenant updated",
-      description: `${values.name}'s information has been updated.`,
-    });
+    showToast(`${values.name}'s information has been updated.`, "success");
 
-    setEditingTenant(null);
+    setEditDialogOpen(false);
+    setSelectedTenant(null);
   }
 
-  function deleteTenant(id: string) {
+  function openDeleteDialog(tenant: Tenant) {
+    setSelectedTenant(tenant);
+    setDeleteDialogOpen(true);
+  }
+
+  function deleteTenant() {
+    if (!selectedTenant) return;
+
     // Remove tenant from users' tenantIds
     const updatedUsers = users.map((user) => ({
       ...user,
-      tenantIds: user.tenantIds.filter((tenantId) => tenantId !== id),
+      tenantIds: user.tenantIds.filter(
+        (tenantId) => tenantId !== selectedTenant.id,
+      ),
     }));
     setUsers(updatedUsers);
 
     // Remove tenant
-    setTenants(tenants.filter((tenant) => tenant.id !== id));
+    setTenants(tenants.filter((tenant) => tenant.id !== selectedTenant.id));
 
-    toast({
-      title: "Tenant deleted",
-      description: "The tenant has been removed from the system.",
-    });
+    showToast("The tenant has been removed from the system.", "success");
+
+    setDeleteDialogOpen(false);
+    setSelectedTenant(null);
   }
 
-  function startEditing(tenant: Tenant) {
-    setEditingTenant(tenant);
-    editForm.reset({
-      name: tenant.name,
-    });
+  function openAssignUserDialog(tenant: Tenant) {
+    setSelectedTenant(tenant);
+    resetAssignUserForm();
+    setAssignUserDialogOpen(true);
   }
 
-  function onUserAssignmentSubmit(
-    values: z.infer<typeof userAssignmentSchema>,
-  ) {
+  function onAssignUserSubmit(values: z.infer<typeof userAssignmentSchema>) {
     if (!selectedTenant) return;
 
     // Check if user is already assigned to this tenant
     if (selectedTenant.userIds.includes(values.userId)) {
-      toast({
-        title: "User already assigned",
-        description: "This user is already assigned to this tenant.",
-        variant: "destructive",
-      });
+      showToast("This user is already assigned to this tenant.", "error");
       return;
     }
 
@@ -232,40 +264,53 @@ export default function TenantManagement() {
     const userName =
       users.find((user) => user.id === values.userId)?.name || "User";
 
-    toast({
-      title: "User assigned",
-      description: `${userName} has been assigned to ${selectedTenant.name}.`,
-    });
+    showToast(
+      `${userName} has been assigned to ${selectedTenant.name}.`,
+      "success",
+    );
 
-    userAssignmentForm.reset();
+    setAssignUserDialogOpen(false);
+    resetAssignUserForm();
   }
 
-  function removeUserFromTenant(tenantId: string, userId: string) {
+  function openRemoveUserDialog(tenant: Tenant, user: User) {
+    setSelectedTenant(tenant);
+    setSelectedUser(user);
+    setRemoveUserDialogOpen(true);
+  }
+
+  function removeUserFromTenant() {
+    if (!selectedTenant || !selectedUser) return;
+
     // Update tenant
     const updatedTenants = tenants.map((tenant) =>
-      tenant.id === tenantId
-        ? { ...tenant, userIds: tenant.userIds.filter((id) => id !== userId) }
+      tenant.id === selectedTenant.id
+        ? {
+            ...tenant,
+            userIds: tenant.userIds.filter((id) => id !== selectedUser.id),
+          }
         : tenant,
     );
     setTenants(updatedTenants);
 
     // Update user
     const updatedUsers = users.map((user) =>
-      user.id === userId
-        ? { ...user, tenantIds: user.tenantIds.filter((id) => id !== tenantId) }
+      user.id === selectedUser.id
+        ? {
+            ...user,
+            tenantIds: user.tenantIds.filter((id) => id !== selectedTenant.id),
+          }
         : user,
     );
     setUsers(updatedUsers);
 
-    // Get names for toast
-    const userName = users.find((user) => user.id === userId)?.name || "User";
-    const tenantName =
-      tenants.find((tenant) => tenant.id === tenantId)?.name || "Tenant";
+    showToast(
+      `${selectedUser.name} has been removed from ${selectedTenant.name}.`,
+      "success",
+    );
 
-    toast({
-      title: "User removed",
-      description: `${userName} has been removed from ${tenantName}.`,
-    });
+    setRemoveUserDialogOpen(false);
+    setSelectedUser(null);
   }
 
   // Get available users for a tenant (users not already assigned)
@@ -274,328 +319,339 @@ export default function TenantManagement() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Tenant Management</h1>
+    <Box sx={{ maxWidth: 900, mx: "auto" }}>
+      <Typography variant="h3" component="h1" sx={{ mb: 4 }}>
+        Tenant Management
+      </Typography>
 
-      <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="list">Tenant List</TabsTrigger>
-          <TabsTrigger value="create">Create Tenant</TabsTrigger>
-        </TabsList>
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="tenant management tabs"
+          sx={{ mb: 2 }}
+        >
+          <Tab label="Tenant List" />
+          <Tab label="Create Tenant" />
+        </Tabs>
+      </Box>
 
-        <TabsContent value="list">
-          <Card>
-            <CardHeader>
-              <CardTitle>Registered Tenants</CardTitle>
-              <CardDescription>
-                View and manage all tenants in the system.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {tenants.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No tenants registered yet. Add a tenant to get started.
-                </div>
-              ) : (
+      <TabPanel value={tabValue} index={0}>
+        <Card>
+          <CardHeader
+            title="Registered Tenants"
+            subheader="View and manage all tenants in the system."
+          />
+          <CardContent>
+            {tenants.length === 0 ? (
+              <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+                No tenants registered yet. Add a tenant to get started.
+              </Typography>
+            ) : (
+              <TableContainer component={Paper} elevation={0}>
                 <Table>
-                  <TableHeader>
+                  <TableHead>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>User Count</TableHead>
-                      <TableHead className="w-[150px]">Actions</TableHead>
+                      <TableCell>Name</TableCell>
+                      <TableCell>User Count</TableCell>
+                      <TableCell align="right" width={150}>
+                        Actions
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
+                  </TableHead>
                   <TableBody>
                     {tenants.map((tenant) => (
                       <TableRow key={tenant.id}>
-                        <TableCell className="font-medium">
+                        <TableCell component="th" scope="row">
                           {tenant.name}
                         </TableCell>
                         <TableCell>{tenant.userIds.length}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => startEditing(tenant)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Tenant</DialogTitle>
-                                  <DialogDescription>
-                                    Update tenant information below.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <Form {...editForm}>
-                                  <form
-                                    onSubmit={editForm.handleSubmit(
-                                      onEditSubmit,
-                                    )}
-                                    className="space-y-6"
-                                  >
-                                    <FormField
-                                      control={editForm.control}
-                                      name="name"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel>Name</FormLabel>
-                                          <FormControl>
-                                            <Input {...field} />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                    <DialogFooter>
-                                      <Button type="submit">
-                                        Save Changes
-                                      </Button>
-                                    </DialogFooter>
-                                  </form>
-                                </Form>
-                              </DialogContent>
-                            </Dialog>
-
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setSelectedTenant(tenant)}
-                                >
-                                  <UserPlus className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>
-                                    Assign User to {tenant.name}
-                                  </DialogTitle>
-                                  <DialogDescription>
-                                    Select a user to assign to this tenant.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <Form {...userAssignmentForm}>
-                                  <form
-                                    onSubmit={userAssignmentForm.handleSubmit(
-                                      onUserAssignmentSubmit,
-                                    )}
-                                    className="space-y-6"
-                                  >
-                                    <FormField
-                                      control={userAssignmentForm.control}
-                                      name="userId"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel>User</FormLabel>
-                                          <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                          >
-                                            <FormControl>
-                                              <SelectTrigger>
-                                                <SelectValue placeholder="Select a user" />
-                                              </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                              {getAvailableUsers(tenant)
-                                                .length === 0 ? (
-                                                <SelectItem
-                                                  value="none"
-                                                  disabled
-                                                >
-                                                  No available users
-                                                </SelectItem>
-                                              ) : (
-                                                getAvailableUsers(tenant).map(
-                                                  (user) => (
-                                                    <SelectItem
-                                                      key={user.id}
-                                                      value={user.id}
-                                                    >
-                                                      {user.name} ({user.email})
-                                                    </SelectItem>
-                                                  ),
-                                                )
-                                              )}
-                                            </SelectContent>
-                                          </Select>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                    <DialogFooter>
-                                      <Button
-                                        type="submit"
-                                        disabled={
-                                          getAvailableUsers(tenant).length === 0
-                                        }
-                                      >
-                                        Assign User
-                                      </Button>
-                                    </DialogFooter>
-                                  </form>
-                                </Form>
-                              </DialogContent>
-                            </Dialog>
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete Tenant
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete{" "}
-                                    {tenant.name}? This action cannot be undone
-                                    and will remove all user associations.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteTenant(tenant.id)}
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
+                        <TableCell align="right">
+                          <Box
+                            sx={{ display: "flex", justifyContent: "flex-end" }}
+                          >
+                            <IconButton
+                              aria-label="edit"
+                              color="primary"
+                              onClick={() => openEditDialog(tenant)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label="assign user"
+                              color="primary"
+                              onClick={() => openAssignUserDialog(tenant)}
+                            >
+                              <PersonAddIcon />
+                            </IconButton>
+                            <IconButton
+                              aria-label="delete"
+                              color="error"
+                              onClick={() => openDeleteDialog(tenant)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              )}
-            </CardContent>
-          </Card>
+              </TableContainer>
+            )}
+          </CardContent>
+        </Card>
 
-          {tenants.map((tenant) => (
-            <Card key={tenant.id} className="mt-8">
-              <CardHeader>
-                <CardTitle>{tenant.name} - Assigned Users</CardTitle>
-                <CardDescription>
-                  Users currently assigned to this tenant.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {tenant.userIds.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    No users assigned to this tenant yet.
-                  </div>
-                ) : (
+        {tenants.map((tenant) => (
+          <Card key={tenant.id} sx={{ mt: 4 }}>
+            <CardHeader
+              title={`${tenant.name} - Assigned Users`}
+              subheader="Users currently assigned to this tenant."
+            />
+            <CardContent>
+              {tenant.userIds.length === 0 ? (
+                <Typography
+                  color="text.secondary"
+                  align="center"
+                  sx={{ py: 2 }}
+                >
+                  No users assigned to this tenant yet.
+                </Typography>
+              ) : (
+                <TableContainer component={Paper} elevation={0}>
                   <Table>
-                    <TableHeader>
+                    <TableHead>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell align="right" width={100}>
+                          Actions
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
+                    </TableHead>
                     <TableBody>
                       {tenant.userIds.map((userId) => {
                         const user = users.find((u) => u.id === userId);
                         if (!user) return null;
                         return (
                           <TableRow key={user.id}>
-                            <TableCell className="font-medium">
+                            <TableCell component="th" scope="row">
                               {user.name}
                             </TableCell>
                             <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Remove User
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to remove{" "}
-                                      {user.name} from {tenant.name}?
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        removeUserFromTenant(tenant.id, user.id)
-                                      }
-                                    >
-                                      Remove
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                            <TableCell align="right">
+                              <IconButton
+                                aria-label="remove user"
+                                color="error"
+                                onClick={() =>
+                                  openRemoveUserDialog(tenant, user)
+                                }
+                              >
+                                <DeleteIcon />
+                              </IconButton>
                             </TableCell>
                           </TableRow>
                         );
                       })}
                     </TableBody>
                   </Table>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New Tenant</CardTitle>
-              <CardDescription>Add a new tenant to the system.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-8"
-                >
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tenant Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Acme Corporation" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          The name of the tenant organization.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    Create Tenant
-                  </Button>
-                </form>
-              </Form>
+                </TableContainer>
+              )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        ))}
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        <Card>
+          <CardHeader
+            title="Create New Tenant"
+            subheader="Add a new tenant to the system."
+          />
+          <CardContent>
+            <form onSubmit={handleCreateSubmit(onCreateSubmit)}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <Controller
+                  name="name"
+                  control={createControl}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Tenant Name"
+                      placeholder="Acme Corporation"
+                      error={!!createErrors.name}
+                      helperText={
+                        createErrors.name
+                          ? createErrors.name.message
+                          : "The name of the tenant organization."
+                      }
+                      fullWidth
+                    />
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2, alignSelf: "flex-start" }}
+                >
+                  Create Tenant
+                </Button>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
+      </TabPanel>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+        <DialogTitle>Edit Tenant</DialogTitle>
+        <form onSubmit={handleEditSubmit(onEditSubmit)}>
+          <DialogContent>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 1 }}
+            >
+              <Controller
+                name="name"
+                control={editControl}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Name"
+                    error={!!editErrors.name}
+                    helperText={editErrors.name?.message}
+                    fullWidth
+                  />
+                )}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" color="primary">
+              Save Changes
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Tenant</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {selectedTenant?.name}? This action
+            cannot be undone and will remove all user associations.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={deleteTenant} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Assign User Dialog */}
+      <Dialog
+        open={assignUserDialogOpen}
+        onClose={() => setAssignUserDialogOpen(false)}
+      >
+        <DialogTitle>Assign User to {selectedTenant?.name}</DialogTitle>
+        <form onSubmit={handleAssignUserSubmit(onAssignUserSubmit)}>
+          <DialogContent>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 3,
+                pt: 1,
+                minWidth: 300,
+              }}
+            >
+              <Controller
+                name="userId"
+                control={assignUserControl}
+                render={({ field }) => (
+                  <FormControl error={!!assignUserErrors.userId} fullWidth>
+                    <InputLabel id="user-select-label">User</InputLabel>
+                    <MuiSelect
+                      {...field}
+                      labelId="user-select-label"
+                      label="User"
+                      displayEmpty
+                      value={field.value}
+                      onChange={field.onChange}
+                    >
+                      {selectedTenant &&
+                      getAvailableUsers(selectedTenant).length === 0 ? (
+                        <MenuItem value="" disabled>
+                          No available users
+                        </MenuItem>
+                      ) : (
+                        <>
+                          <MenuItem value="" disabled>
+                            <em>Select a user</em>
+                          </MenuItem>
+                          {selectedTenant &&
+                            getAvailableUsers(selectedTenant).map((user) => (
+                              <MenuItem key={user.id} value={user.id}>
+                                {user.name} ({user.email})
+                              </MenuItem>
+                            ))}
+                        </>
+                      )}
+                    </MuiSelect>
+                    {assignUserErrors.userId && (
+                      <FormHelperText>
+                        {assignUserErrors.userId.message}
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+                )}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setAssignUserDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              color="primary"
+              disabled={
+                selectedTenant && getAvailableUsers(selectedTenant).length === 0
+              }
+            >
+              Assign User
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Remove User Dialog */}
+      <Dialog
+        open={removeUserDialogOpen}
+        onClose={() => setRemoveUserDialogOpen(false)}
+      >
+        <DialogTitle>Remove User</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to remove {selectedUser?.name} from{" "}
+            {selectedTenant?.name}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRemoveUserDialogOpen(false)}>Cancel</Button>
+          <Button onClick={removeUserFromTenant} color="error" autoFocus>
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

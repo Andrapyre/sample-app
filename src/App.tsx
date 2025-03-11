@@ -15,8 +15,8 @@ const MicroscopeManagement = lazy(
   () => import("./pages/devices/MicroscopeManagement"),
 );
 const SensorManagement = lazy(() => import("./pages/devices/SensorManagement"));
-const UserManagement = lazy(() => import("./pages/UserManagement.mui"));
-const TenantManagement = lazy(() => import("./pages/TenantManagement.mui"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const TenantManagement = lazy(() => import("./pages/TenantManagement"));
 const Login = lazy(() => import("./pages/Login"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 

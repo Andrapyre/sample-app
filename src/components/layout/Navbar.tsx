@@ -1,4 +1,4 @@
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -25,6 +25,7 @@ import { useState } from "react";
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [devicesMenuAnchor, setDevicesMenuAnchor] =
     useState<null | HTMLElement>(null);
@@ -33,11 +34,20 @@ export default function Navbar() {
     setDevicesMenuAnchor(event.currentTarget);
   };
 
+  const isOpen = Boolean(devicesMenuAnchor);
+
   const handleDevicesMenuClose = () => {
     setDevicesMenuAnchor(null);
   };
 
   const isDevicesActive = location.pathname.startsWith("/devices");
+
+  const handleMenuItemClick = (path: string) => {
+    handleDevicesMenuClose();
+    setTimeout(() => {
+      navigate(path);
+    }, 10);
+  };
 
   return (
     <AppBar position="static" color="primary">
@@ -75,7 +85,7 @@ export default function Navbar() {
                   </Button>
                   <Menu
                     anchorEl={devicesMenuAnchor}
-                    open={Boolean(devicesMenuAnchor)}
+                    open={isOpen}
                     onClose={handleDevicesMenuClose}
                     MenuListProps={{ sx: { py: 0 } }}
                     anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
@@ -85,33 +95,25 @@ export default function Navbar() {
                     keepMounted
                   >
                     <MenuItem
-                      onClick={handleDevicesMenuClose}
-                      component={RouterLink}
-                      to="/devices"
+                      onClick={() => handleMenuItemClick('/devices')}
                     >
                       <DashboardIcon fontSize="small" sx={{ mr: 1 }} />
                       Dashboard
                     </MenuItem>
                     <MenuItem
-                      onClick={handleDevicesMenuClose}
-                      component={RouterLink}
-                      to="/devices/cameras"
+                      onClick={() => handleMenuItemClick('/devices/cameras')}
                     >
                       <CameraIcon fontSize="small" sx={{ mr: 1 }} />
                       Cameras
                     </MenuItem>
                     <MenuItem
-                      onClick={handleDevicesMenuClose}
-                      component={RouterLink}
-                      to="/devices/microscopes"
+                      onClick={() => handleMenuItemClick('/devices/microscopes')}
                     >
                       <MicroscopeIcon fontSize="small" sx={{ mr: 1 }} />
                       Microscopes
                     </MenuItem>
                     <MenuItem
-                      onClick={handleDevicesMenuClose}
-                      component={RouterLink}
-                      to="/devices/sensors"
+                      onClick={() => handleMenuItemClick('/devices/sensors')}
                     >
                       <SensorIcon fontSize="small" sx={{ mr: 1 }} />
                       Sensors
